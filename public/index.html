@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MenuDirect Demo</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <h1>MenuDirect</h1>
+      <p>Simple demo UI for Case Study 53 — talks to your existing REST + Socket.io API</p>
+    </div>
+    <div class="top-meta">
+      <span id="socketPill" class="pill off">Socket: offline</span>
+      <span id="userPill" class="pill">Not logged in</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button type="button" data-tab="customer" class="active">1. Customer Order</button>
+    <button type="button" data-tab="kitchen">2. Kitchen</button>
+    <button type="button" data-tab="staff">3. Staff / Menu</button>
+    <button type="button" data-tab="manager">4. Manager</button>
+  </nav>
+
+  <main>
+    <!-- CUSTOMER -->
+    <section id="panel-customer" class="panel active">
+      <h2>Customer flow (QR → menu → order → split bill)</h2>
+      <p class="hint">No login needed to order. Pick a table, add food, place order. Kitchen panel updates live over Socket.io.</p>
+
+      <div class="grid-2">
+        <div class="box">
+          <h3>1. Choose table</h3>
+          <div id="tablesGrid" class="grid-3"></div>
+          <div style="margin-top:12px">
+            <div class="qr-wrap">
+              <img id="qrImg" alt="Table QR" />
+              <div class="sans" id="qrLabel" style="margin-top:6px;font-weight:600">Select a table</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="box">
+          <h3>2. Menu — add items</h3>
+          <div id="menuList" class="scroll"></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:16px">
+        <div class="box">
+          <h3>3. Your cart</h3>
+          <label>Customer name</label>
+          <input id="customerName" value="Guest" />
+          <div id="cartList"></div>
+          <p class="sans" id="cartTotal" style="margin:10px 0;font-weight:600">Total items: 0</p>
+          <div class="row">
+            <button class="btn" id="btnPlaceOrder">Place order</button>
+            <button class="btn ghost" id="btnClearCart">Clear cart</button>
+          </div>
+          <p class="hint" id="lastOrderInfo" style="margin-top:10px"></p>
+        </div>
+
+        <div class="box">
+          <h3>4. Split bill</h3>
+          <p class="hint">Uses the last order you placed in this browser session.</p>
+          <label>Number of people</label>
+          <input id="splitPeople" type="number" min="2" value="2" />
+          <button class="btn secondary" id="btnSplitBill">Split last order equally</button>
+          <pre class="sans" id="splitResult" style="margin-top:10px;white-space:pre-wrap;font-size:0.85rem"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- KITCHEN -->
+    <section id="panel-kitchen" class="panel">
+      <h2>Kitchen / waiter tickets</h2>
+      <p class="hint">Login as kitchen or staff below, then refresh tickets. Status changes broadcast over Socket.io.</p>
+
+      <div class="auth-bar" id="kitchenAuthBar">
+        Quick login:
+        <button class="btn sm teal" data-login="kitchen">chef@menudirect.com</button>
+        <button class="btn sm secondary" data-login="staff">staff@menudirect.com</button>
+        <span id="kitchenAuthStatus"></span>
+      </div>
+
+      <div class="grid-2">
+        <div class="box">
+          <div class="row" style="justify-content:space-between;margin-bottom:10px">
+            <h3>Active tickets</h3>
+            <button class="btn ghost sm" id="btnRefreshKitchen">Refresh</button>
+          </div>
+          <div id="kitchenList" class="scroll"></div>
+        </div>
+        <div class="box">
+          <h3>Live Socket.io feed</h3>
+          <div id="eventFeed" class="feed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAFF -->
+    <section id="panel-staff" class="panel">
+      <h2>Staff tools (menu, tables, inventory)</h2>
+      <p class="hint">Needs staff / manager JWT. Password for all seeded users: <code>password123</code></p>
+
+      <div class="auth-bar">
+        Quick login:
+        <button class="btn sm secondary" data-login="staff">staff</button>
+        <button class="btn sm" data-login="manager">manager</button>
+        <span id="staffAuthStatus"></span>
+      </div>
+
+      <div class="grid-2">
+        <div class="box">
+          <h3>Add menu item</h3>
+          <label>Name</label>
+          <input id="newMenuName" placeholder="e.g. Masala Fries" />
+          <label>Description</label>
+          <input id="newMenuDesc" placeholder="Short description" />
+          <label>Price</label>
+          <input id="newMenuPrice" type="number" value="180" />
+          <label>Category</label>
+          <select id="newMenuCat">
+            <option>Starters</option>
+            <option>Main Course</option>
+            <option>Beverages</option>
+            <option>Desserts</option>
+          </select>
+          <button class="btn" id="btnCreateMenu">Create menu item</button>
+          <hr style="margin:14px 0;border:none;border-top:1px solid var(--border)" />
+          <h3>Add customization to a dish</h3>
+          <label>Menu item</label>
+          <select id="custMenuSelect"></select>
+          <label>Option name</label>
+          <input id="custName" placeholder="Extra cheese" />
+          <label>Extra price</label>
+          <input id="custPrice" type="number" value="20" />
+          <button class="btn secondary" id="btnAddCust">Add customization</button>
+        </div>
+
+        <div class="box">
+          <h3>Tables</h3>
+          <div class="row">
+            <input id="newTableNum" type="number" placeholder="Table #" style="max-width:100px;margin:0" />
+            <input id="newTableCap" type="number" placeholder="Capacity" value="4" style="max-width:100px;margin:0" />
+            <button class="btn sm" id="btnCreateTable">Create table + QR</button>
+          </div>
+          <div id="staffTables" class="scroll" style="margin-top:12px"></div>
+
+          <h3 style="margin-top:16px">Inventory</h3>
+          <button class="btn ghost sm" id="btnRefreshInv">Refresh inventory</button>
+          <div id="invList" class="scroll" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MANAGER -->
+    <section id="panel-manager" class="panel">
+      <h2>Manager analytics + notification demo</h2>
+      <p class="hint">Login as manager. Popular dishes and peak hours come from real order data.</p>
+
+      <div class="auth-bar">
+        Quick login:
+        <button class="btn sm" data-login="manager">manager@menudirect.com</button>
+        <span id="managerAuthStatus"></span>
+      </div>
+
+      <div class="grid-2">
+        <div class="box">
+          <div class="row" style="justify-content:space-between;margin-bottom:8px">
+            <h3>Popular items</h3>
+            <button class="btn ghost sm" id="btnPopular">Load</button>
+          </div>
+          <div id="popularList"></div>
+        </div>
+        <div class="box">
+          <div class="row" style="justify-content:space-between;margin-bottom:8px">
+            <h3>Peak hours</h3>
+            <button class="btn ghost sm" id="btnPeak">Load</button>
+          </div>
+          <div id="peakList"></div>
+        </div>
+      </div>
+
+      <div class="box" style="margin-top:16px">
+        <h3>Send order notification (Firebase simulated)</h3>
+        <label>Order ID</label>
+        <input id="notifOrderId" placeholder="paste order _id or leave blank to use last customer order" />
+        <label>Title</label>
+        <input id="notifTitle" value="Food is Ready!" />
+        <label>Message</label>
+        <input id="notifMsg" value="Your order is hot and ready." />
+        <button class="btn" id="btnNotif">Send notification</button>
+        <pre class="sans" id="notifResult" style="margin-top:10px;white-space:pre-wrap;font-size:0.85rem"></pre>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

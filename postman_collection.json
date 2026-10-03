@@ -1,0 +1,331 @@
+{
+  "info": {
+    "name": "MenuDirect API Collection",
+    "description": "Complete Postman Collection for MenuDirect Digital Menu Ordering System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Student Tester\",\n  \"email\": \"student@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"staff\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/register"
+          }
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@menudirect.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "http://localhost:3000/api/auth/login"
+          }
+        },
+        {
+          "name": "Get Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": "http://localhost:3000/api/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Menus & Customizations",
+      "item": [
+        {
+          "name": "Get All Menus",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/menus"
+          }
+        },
+        {
+          "name": "Filter Menus by Category",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/menus?category=Starters"
+          }
+        },
+        {
+          "name": "Create Menu Item (Staff)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Crispy Corn\",\n  \"description\": \"Golden sweet corn tossed in spices\",\n  \"price\": 220,\n  \"category\": \"Starters\",\n  \"preparationTimeMinutes\": 10\n}"
+            },
+            "url": "http://localhost:3000/api/menus"
+          }
+        },
+        {
+          "name": "Get All Customizations",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/customizations"
+          }
+        },
+        {
+          "name": "Add Customization to Dish",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"menuItemId\": \"{{menu_item_id}}\",\n  \"name\": \"Extra Mayo\",\n  \"additionalPrice\": 25\n}"
+            },
+            "url": "http://localhost:3000/api/customizations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tables & QR",
+      "item": [
+        {
+          "name": "Get All Tables",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/tables"
+          }
+        },
+        {
+          "name": "Create Table with QR",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tableNumber\": 7,\n  \"capacity\": 6\n}"
+            },
+            "url": "http://localhost:3000/api/tables"
+          }
+        },
+        {
+          "name": "Scan Table QR (Customer Flow)",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/qr/table/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order (Table QR Order)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tableNumber\": 1,\n  \"customerName\": \"John Doe\",\n  \"items\": [\n    {\n      \"menuItemId\": \"{{menu_item_id}}\",\n      \"quantity\": 2,\n      \"itemNotes\": \"Extra spicy\"\n    }\n  ]\n}"
+            },
+            "url": "http://localhost:3000/api/orders"
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": "http://localhost:3000/api/orders"
+          }
+        },
+        {
+          "name": "Update Order Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"preparing\"\n}"
+            },
+            "url": "http://localhost:3000/api/orders/{{order_id}}/status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Split Bills",
+      "item": [
+        {
+          "name": "Create Equal Split Bill",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"splitType\": \"equal\",\n  \"numberOfPeople\": 2\n}"
+            },
+            "url": "http://localhost:3000/api/split-bill"
+          }
+        },
+        {
+          "name": "Get Split Bill by Order",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/split-bill/order/{{order_id}}"
+          }
+        },
+        {
+          "name": "Pay Individual Share",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shareIndex\": 0\n}"
+            },
+            "url": "http://localhost:3000/api/split-bill/{{split_bill_id}}/pay"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kitchen & Waiter Tickets",
+      "item": [
+        {
+          "name": "Get Kitchen Tickets (KOT)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": "http://localhost:3000/api/kitchen"
+          }
+        },
+        {
+          "name": "Update Kitchen Ticket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ready_for_pickup\"\n}"
+            },
+            "url": "http://localhost:3000/api/kitchen/{{ticket_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventory & Raw Materials",
+      "item": [
+        {
+          "name": "Get Inventory Stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": "http://localhost:3000/api/inventory"
+          }
+        },
+        {
+          "name": "Update / Restock Inventory",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restockQuantity\": 10\n}"
+            },
+            "url": "http://localhost:3000/api/inventory/{{inventory_id}}"
+          }
+        },
+        {
+          "name": "Auto-deduct Inventory",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deductions\": [\n    { \"itemName\": \"Fresh Cottage Cheese (Paneer)\", \"amountDeducted\": 2 }\n  ]\n}"
+            },
+            "url": "http://localhost:3000/api/inventory/auto-deduct"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics & Notifications",
+      "item": [
+        {
+          "name": "Get Most Popular Dishes",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": "http://localhost:3000/api/analytics/popular"
+          }
+        },
+        {
+          "name": "Get Peak Ordering Hours",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": "http://localhost:3000/api/analytics/peak-hours"
+          }
+        },
+        {
+          "name": "Send Push Notification (Firebase)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{order_id}}\",\n  \"title\": \"Food is Ready!\",\n  \"message\": \"Your Paneer Tikka is hot and ready at the counter.\"\n}"
+            },
+            "url": "http://localhost:3000/api/notifications/send"
+          }
+        }
+      ]
+    }
+  ]
+}
